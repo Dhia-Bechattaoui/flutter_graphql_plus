@@ -1,0 +1,31 @@
+name: flutter_graphql_plus
+description: A powerful GraphQL client for Flutter with advanced caching, offline support, and real-time subscriptions. Supports all 6 platforms including WASM.
+version: 0.0.3
+homepage: https://github.com/Dhia-Bechattaoui/flutter_graphql_plus
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  graphql: ^5.0.0
+  http: ^1.0.0
+  shared_preferences: ^2.0.0
+  hive: ^2.0.0
+  hive_flutter: ^1.0.0
+  web_socket_channel: ^3.0.3
+  json_annotation: ^4.0.0
+  # Web-specific dependencies for WASM compatibility
+  universal_html: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  hive_generator: ^2.0.0
+  mockito: ^5.0.0
+
+flutter:
+  # No UI components, this is a pure Dart package

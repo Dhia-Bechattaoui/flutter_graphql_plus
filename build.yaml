@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      hive_generator:hive_generator:
+        options:
+          # WASM-compatible Hive configuration
+          type_id: true
+          class_name: true
