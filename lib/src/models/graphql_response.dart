@@ -173,10 +173,7 @@ class ErrorLocation {
   /// Column number where the error occurred
   final int column;
 
-  const ErrorLocation({
-    required this.line,
-    required this.column,
-  });
+  const ErrorLocation({required this.line, required this.column});
 
   @override
   String toString() {
@@ -196,10 +193,7 @@ class ErrorLocation {
 
   /// Convert to JSON
   Map<String, dynamic> toJson() {
-    return {
-      'line': line,
-      'column': column,
-    };
+    return {'line': line, 'column': column};
   }
 
   /// Create from JSON

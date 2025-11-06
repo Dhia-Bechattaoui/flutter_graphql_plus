@@ -11,6 +11,12 @@ class SubscriptionManager {
   final Map<String, GraphQLRequest> _subscriptionRequests = {};
   bool _connected = false;
   String? _endpoint;
+  bool _reconnecting = false;
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 10;
+  static const Duration _initialReconnectDelay = Duration(seconds: 1);
+  Timer? _reconnectTimer;
+  StreamSubscription<dynamic>? _messageSubscription;
 
   /// Initialize WebSocket connection
   Future<void> connect(String endpoint) async {
@@ -22,36 +28,43 @@ class SubscriptionManager {
       _channel = WebSocketChannel.connect(Uri.parse(endpoint));
       _endpoint = endpoint;
       _connected = true;
+      _reconnectAttempts =
+          0; // Reset reconnect attempts on successful connection
 
       // Listen for messages
-      _channel!.stream.listen(
+      _messageSubscription = _channel!.stream.listen(
         _handleMessage,
         onError: _handleError,
         onDone: _handleDisconnect,
       );
 
       // Send connection initialization
-      _sendMessage({
-        'type': 'connection_init',
-        'payload': {},
-      });
+      _sendMessage({'type': 'connection_init', 'payload': {}});
     } catch (e) {
       _connected = false;
+      // Attempt automatic reconnection
+      _scheduleReconnect();
       rethrow;
     }
   }
 
   /// Disconnect WebSocket
   Future<void> disconnect() async {
-    if (!_connected) return;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _reconnecting = false;
+
+    if (!_connected && _channel == null) return;
 
     // Close all subscriptions
     for (final subscriptionId in _subscriptions.keys.toList()) {
       await unsubscribe(subscriptionId);
     }
 
+    await _messageSubscription?.cancel();
     await _channel?.sink.close();
     _channel = null;
+    _messageSubscription = null;
     _connected = false;
     _endpoint = null;
   }
@@ -88,10 +101,7 @@ class SubscriptionManager {
 
     // Send subscription stop message
     if (_connected) {
-      _sendMessage({
-        'id': subscriptionId,
-        'type': 'stop',
-      });
+      _sendMessage({'id': subscriptionId, 'type': 'stop'});
     }
 
     // Close stream controller
@@ -181,19 +191,99 @@ class SubscriptionManager {
 
   /// Handle WebSocket errors
   void _handleError(dynamic error) {
-    // Notify all active subscriptions of the error
-    for (final controller in _subscriptions.values) {
-      controller.addError(error);
+    _connected = false;
+    // Attempt automatic reconnection
+    if (!_reconnecting && _subscriptions.isNotEmpty) {
+      _scheduleReconnect();
+    } else {
+      // Notify all active subscriptions of the error
+      for (final controller in _subscriptions.values) {
+        controller.addError(error);
+      }
     }
   }
 
   /// Handle WebSocket disconnection
   void _handleDisconnect() {
+    final wasConnected = _connected;
     _connected = false;
+    _messageSubscription?.cancel();
+    _messageSubscription = null;
 
-    // Notify all active subscriptions of disconnection
-    for (final controller in _subscriptions.values) {
-      controller.addError(StateError('WebSocket disconnected'));
+    // Only attempt reconnection if we had active subscriptions
+    if (wasConnected && _subscriptions.isNotEmpty && !_reconnecting) {
+      _scheduleReconnect();
+    } else if (wasConnected) {
+      // Notify all active subscriptions of disconnection
+      for (final controller in _subscriptions.values) {
+        controller.addError(StateError('WebSocket disconnected'));
+      }
+    }
+  }
+
+  /// Schedule automatic reconnection with exponential backoff
+  void _scheduleReconnect() {
+    if (_reconnecting || _endpoint == null) return;
+    if (_reconnectAttempts >= _maxReconnectAttempts) {
+      // Max attempts reached, notify all subscriptions
+      for (final controller in _subscriptions.values) {
+        controller.addError(
+          StateError(
+            'WebSocket reconnection failed after $_maxReconnectAttempts attempts',
+          ),
+        );
+      }
+      return;
+    }
+
+    _reconnecting = true;
+    _reconnectAttempts++;
+
+    // Calculate exponential backoff delay
+    final delay = Duration(
+      milliseconds:
+          (_initialReconnectDelay.inMilliseconds *
+                  (1 << (_reconnectAttempts - 1)))
+              .clamp(
+                _initialReconnectDelay.inMilliseconds,
+                30000, // Max 30 seconds
+              ),
+    );
+
+    _reconnectTimer = Timer(delay, () async {
+      try {
+        await connect(_endpoint!);
+        _reconnecting = false;
+        // Resubscribe to all active subscriptions
+        await _resubscribeAll();
+      } catch (e) {
+        _reconnecting = false;
+        // Schedule another reconnection attempt
+        if (_subscriptions.isNotEmpty) {
+          _scheduleReconnect();
+        }
+      }
+    });
+  }
+
+  /// Resubscribe to all active subscriptions after reconnection
+  Future<void> _resubscribeAll() async {
+    final requests = Map<String, GraphQLRequest>.from(_subscriptionRequests);
+
+    for (final entry in requests.entries) {
+      final subscriptionId = entry.key;
+      final request = entry.value;
+
+      // Resend subscription start message
+      _sendMessage({
+        'id': subscriptionId,
+        'type': 'start',
+        'payload': {
+          'query': request.query,
+          'variables': request.variables,
+          'operationName': request.operationName,
+        },
+      });
     }
   }
 
@@ -237,6 +327,8 @@ class SubscriptionManager {
 
   /// Dispose resources
   void dispose() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
     disconnect();
   }
 }

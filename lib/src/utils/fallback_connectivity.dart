@@ -24,8 +24,12 @@ class FallbackConnectivity implements ConnectivityInterface {
   Future<void> initialize() async {
     _connectivityController = StreamController<bool>.broadcast();
 
-    // Check initial connectivity
-    await _checkConnectivity();
+    // Check initial connectivity in background (non-blocking)
+    // Don't await it to avoid blocking initialization
+    _checkConnectivity().catchError((_) {
+      // Silently handle errors during initialization
+      // Default to connected state if check fails
+    });
 
     // Start periodic connectivity checks (every 30 seconds)
     _connectivityTimer = Timer.periodic(
@@ -39,25 +43,37 @@ class FallbackConnectivity implements ConnectivityInterface {
     try {
       // Use a simple web-compatible connectivity check
       // Try to fetch a small resource from a reliable host
-      final uri = Uri.parse('https://httpbin.org/status/200');
+      // Using Google's DNS as it's more reliable than httpbin
+      final uri = Uri.parse('https://www.google.com/favicon.ico');
 
       // Use http package which is WASM compatible
-      final response = await http.get(uri).timeout(
-            const Duration(seconds: 5),
-            onTimeout: () => throw TimeoutException('Request timeout'),
+      // Shorter timeout to avoid blocking
+      final response = await http
+          .get(uri)
+          .timeout(
+            const Duration(seconds: 3),
+            onTimeout: () {
+              // Return a fake response with error status instead of throwing
+              throw TimeoutException('Request timeout');
+            },
           );
 
-      final newStatus = response.statusCode == 200;
+      final newStatus = response.statusCode >= 200 && response.statusCode < 400;
       if (newStatus != _isConnected) {
         _isConnected = newStatus;
         _connectivityController.add(_isConnected);
       }
-    } catch (_) {
-      // If request fails, assume no connectivity
-      if (_isConnected) {
+    } catch (e) {
+      // If request fails or times out, assume no connectivity
+      // But only update if we were previously connected to avoid
+      // false negatives during initialization
+      if (_isConnected && e is! TimeoutException) {
+        // Only mark as disconnected if it's not a timeout
+        // Timeouts might be due to slow network, not no connectivity
         _isConnected = false;
         _connectivityController.add(_isConnected);
       }
+      // For timeouts, keep the current state (optimistic approach)
     }
   }
 

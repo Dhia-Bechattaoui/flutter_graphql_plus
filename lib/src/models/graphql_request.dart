@@ -59,8 +59,9 @@ class GraphQLRequest {
       query: json['query'] as String,
       variables: json['variables'] as Map<String, dynamic>?,
       operationName: json['operationName'] as String?,
-      cachePolicy:
-          _cachePolicyFromJson(json['cachePolicy'] as String? ?? 'cacheFirst'),
+      cachePolicy: _cachePolicyFromJson(
+        json['cachePolicy'] as String? ?? 'cacheFirst',
+      ),
       persistOffline: json['persistOffline'] as bool? ?? false,
     );
   }

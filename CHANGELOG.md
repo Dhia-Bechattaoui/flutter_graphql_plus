@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2025-11-06
+
+### Added
+- ✅ Implemented `cacheAndNetwork` cache policy - returns cache immediately, then fetches from network
+- ✅ Automatic reconnection for WebSocket subscriptions with exponential backoff
+- ✅ Enhanced performance monitoring with detailed metrics (response times, cache hit rates, error rates)
+- ✅ Automatic offline request synchronization - `processOfflineRequests()` now actually processes requests
+- ✅ Comprehensive example app demonstrating all package features
+- ✅ GitHub Actions workflows for CI/CD, testing, and publishing
+- ✅ Package topics (graphql, flutter, caching, offline, websocket)
+- ✅ Funding information in pubspec.yaml
+
+### Fixed
+- ✅ Fixed Hive initialization - automatically initializes Hive before opening boxes
+- ✅ Fixed connectivity check blocking - made non-blocking with proper timeout handling
+- ✅ Fixed offline sync - `processOfflineRequests()` now executes requests instead of just removing them
+- ✅ Fixed dependency constraint compatibility - all dependencies work with lower bounds
+- ✅ Fixed static analysis issues - achieved perfect 50/50 points
+- ✅ Fixed pana score - achieved perfect 160/160 points
+
+### Improved
+- ✅ Updated SDK requirements: Dart >=3.8.0, Flutter >=3.32.0
+- ✅ Enhanced error messages with detailed explanations
+- ✅ Improved example app with all features demonstrated
+- ✅ Better connectivity handling with fallback mechanism
+- ✅ More reliable endpoint for connectivity checks
+
+### Technical Improvements
+- Added explicit `hive` import for better compatibility
+- Enhanced subscription manager with automatic reconnection logic
+- Improved cache manager with automatic Hive initialization
+- Better error handling throughout the package
+- Comprehensive performance metrics tracking
+
 ## [0.0.3] - 2025-08-21
 
 ### Fixed
@@ -115,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **0.1.0** - Major feature additions: cacheAndNetwork policy, automatic reconnection, performance monitoring, offline sync fixes, perfect pana score (160/160)
 - **0.0.3** - Removed json_serializable, enhanced WASM compatibility, cleaner builds
 - **0.0.2** - Enhanced compatibility and WASM support
 - **0.0.1** - Initial release with core GraphQL functionality

@@ -2,6 +2,8 @@
 
 A powerful GraphQL client for Flutter with advanced caching, offline support, and real-time subscriptions. Built for modern Flutter applications that need robust data management.
 
+<img src="assets/example.gif" width="300" alt="Flutter GraphQL Plus Example">
+
 ## Features
 
 🚀 **Advanced Caching** - Intelligent caching with multiple policies (cache-first, network-first, cache-only, etc.)

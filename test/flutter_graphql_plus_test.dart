@@ -68,13 +68,13 @@ void main() {
     test('should create GraphQLResponse with data', () {
       final response = GraphQLResponse(
         data: {
-          'user': {'id': '123', 'name': 'John'}
+          'user': {'id': '123', 'name': 'John'},
         },
         fromCache: false,
       );
 
       expect(response.data, {
-        'user': {'id': '123', 'name': 'John'}
+        'user': {'id': '123', 'name': 'John'},
       });
       expect(response.errors, null);
       expect(response.fromCache, false);
@@ -83,9 +83,7 @@ void main() {
     });
 
     test('should create GraphQLResponse with errors', () {
-      final errors = [
-        const GraphQLError(message: 'User not found'),
-      ];
+      final errors = [const GraphQLError(message: 'User not found')];
 
       final response = GraphQLResponse(errors: errors);
 
@@ -98,7 +96,7 @@ void main() {
     test('should create copy with new values', () {
       final original = GraphQLResponse(
         data: {
-          'user': {'id': '123'}
+          'user': {'id': '123'},
         },
         fromCache: false,
       );
@@ -113,11 +111,11 @@ void main() {
     test('should convert to and from JSON', () {
       final response = GraphQLResponse(
         data: {
-          'user': {'id': '123'}
+          'user': {'id': '123'},
         },
         errors: [const GraphQLError(message: 'Test error')],
         extensions: {
-          'tracing': {'version': 1}
+          'tracing': {'version': 1},
         },
         fromCache: true,
       );
@@ -243,12 +241,18 @@ void main() {
     });
 
     test('should get error severity', () {
-      expect(ErrorHandler.getErrorSeverity('Unauthorized'),
-          ErrorSeverity.critical);
-      expect(ErrorHandler.getErrorSeverity('Network timeout'),
-          ErrorSeverity.warning);
       expect(
-          ErrorHandler.getErrorSeverity('Invalid input'), ErrorSeverity.error);
+        ErrorHandler.getErrorSeverity('Unauthorized'),
+        ErrorSeverity.critical,
+      );
+      expect(
+        ErrorHandler.getErrorSeverity('Network timeout'),
+        ErrorSeverity.warning,
+      );
+      expect(
+        ErrorHandler.getErrorSeverity('Invalid input'),
+        ErrorSeverity.error,
+      );
     });
   });
 

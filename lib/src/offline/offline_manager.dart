@@ -74,7 +74,10 @@ class OfflineManager {
   }
 
   /// Process offline requests when connectivity is restored
-  Future<void> processOfflineRequests() async {
+  /// [processRequest] is a callback function that executes the request
+  Future<void> processOfflineRequests(
+    Future<GraphQLResponse> Function(GraphQLRequest) processRequest,
+  ) async {
     if (!_initialized) await initialize();
 
     if (!_connectivityUtils.isConnected) return;
@@ -85,10 +88,16 @@ class OfflineManager {
     // Process requests in order
     for (final request in requests) {
       try {
-        // Attempt to process the request
-        // This would typically involve calling the GraphQL client
-        // For now, we'll just remove processed requests
-        await _removeOfflineRequest(request);
+        // Execute the request using the provided callback
+        final response = await processRequest(request);
+
+        // If successful, remove from offline queue
+        if (response.isSuccessful) {
+          await _removeOfflineRequest(request);
+        } else {
+          // Keep failed requests for retry (don't remove them)
+          continue;
+        }
       } catch (e) {
         // Keep failed requests for retry
         continue;
@@ -100,7 +109,8 @@ class OfflineManager {
   Future<void> _removeOfflineRequest(GraphQLRequest request) async {
     final requests = _getOfflineRequests();
     requests.removeWhere(
-        (r) => _generateRequestKey(r) == _generateRequestKey(request));
+      (r) => _generateRequestKey(r) == _generateRequestKey(request),
+    );
     await _saveOfflineRequests(requests);
   }
 
@@ -119,10 +129,7 @@ class OfflineManager {
     final requests = _getOfflineRequests();
     final responses = _getOfflineResponses();
 
-    return {
-      'requests': requests.length,
-      'responses': responses.length,
-    };
+    return {'requests': requests.length, 'responses': responses.length};
   }
 
   /// Generate a unique key for a request
@@ -174,7 +181,8 @@ class OfflineManager {
 
   /// Save offline responses to SharedPreferences
   Future<void> _saveOfflineResponses(
-      Map<String, Map<String, dynamic>> responses) async {
+    Map<String, Map<String, dynamic>> responses,
+  ) async {
     final responsesJson = jsonEncode(responses);
     await _prefs.setString(_offlineResponsesKey, responsesJson);
   }

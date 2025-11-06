@@ -1,5 +1,7 @@
 import 'dart:convert';
+// ignore: unnecessary_import
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../models/graphql_request.dart';
 import '../models/graphql_response.dart';
 
@@ -11,10 +13,24 @@ class CacheManager {
   late Box<String> _cacheBox;
   late Box<String> _expiryBox;
   bool _initialized = false;
+  static bool _hiveInitialized = false;
 
   /// Initialize the cache manager
   Future<void> initialize() async {
     if (_initialized) return;
+
+    // Initialize Hive if not already initialized
+    if (!_hiveInitialized) {
+      try {
+        await Hive.initFlutter();
+        _hiveInitialized = true;
+      } catch (e) {
+        // If initFlutter fails (e.g., on web or if already initialized),
+        // try to continue - Hive might already be initialized by the app
+        // or we'll get an error when opening boxes which we can handle
+        _hiveInitialized = true;
+      }
+    }
 
     _cacheBox = await Hive.openBox<String>(_cacheBoxName);
     _expiryBox = await Hive.openBox<String>(_cacheExpiryBoxName);
@@ -122,10 +138,7 @@ class CacheManager {
       }
     }
 
-    return {
-      'total': total,
-      'expired': expired,
-    };
+    return {'total': total, 'expired': expired};
   }
 
   /// Dispose resources
