@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Initial package structure
+- GraphQL client with advanced caching capabilities
+- Offline support with local storage
+- Real-time subscriptions support
+- Multi-platform support (iOS, Android, Web, Windows, macOS, Linux)
+- WASM compatibility
+- Comprehensive test coverage
+- Pana analysis integration
+
 ## [0.1.0] - 2025-11-06
 
 ### Added
@@ -31,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Improved example app with all features demonstrated
 - ✅ Better connectivity handling with fallback mechanism
 - ✅ More reliable endpoint for connectivity checks
+- ✅ Simplified CI workflow to only run pana tests
 
 ### Technical Improvements
 - Added explicit `hive` import for better compatibility
@@ -38,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved cache manager with automatic Hive initialization
 - Better error handling throughout the package
 - Comprehensive performance metrics tracking
+- Removed separate pana.yml and publish.yml workflow files
 
 ## [0.0.3] - 2025-08-21
 
@@ -101,18 +115,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ WASM - Full compatibility
 
 ---
-
-## [Unreleased]
-
-### Added
-- Initial package structure
-- GraphQL client with advanced caching capabilities
-- Offline support with local storage
-- Real-time subscriptions support
-- Multi-platform support (iOS, Android, Web, Windows, macOS, Linux)
-- WASM compatibility
-- Comprehensive test coverage
-- Pana analysis integration
 
 ## [0.0.1] - 2024-12-19
 
