@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Better connectivity handling with fallback mechanism
 - ✅ More reliable endpoint for connectivity checks
 - ✅ Simplified CI workflow to only run pana tests
+- ✅ Optimized CI workflow to run pana only once instead of twice
 
 ### Technical Improvements
 - Added explicit `hive` import for better compatibility
