@@ -13,10 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Dart
-        uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          flutter-version: '3.32.0'
+          channel: 'stable'
+          cache: true
       
       - name: Install pana
         run: dart pub global activate pana

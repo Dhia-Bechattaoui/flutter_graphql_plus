@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Fixed dependency constraint compatibility - all dependencies work with lower bounds
 - ✅ Fixed static analysis issues - achieved perfect 50/50 points
 - ✅ Fixed pana score - achieved perfect 160/160 points
+- ✅ Fixed CI workflow to use Flutter instead of Dart for pana analysis
 
 ### Improved
 - ✅ Updated SDK requirements: Dart >=3.8.0, Flutter >=3.32.0
